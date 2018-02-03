@@ -170,7 +170,7 @@ ApplicationWindow
 			Button
 			{
 				width: parent.width
-				text: "Polynom3x Approximation"
+				text: "Polynom3x Approximation (yellow)"
 				height: parent.height / 4
 
 				onClicked:
@@ -185,7 +185,7 @@ ApplicationWindow
 			Button
 			{
 				width: parent.width
-				text: "Lagrange interpolation"
+				text: "Lagrange interpolation (red)"
 				height: parent.height / 4
 
 				onClicked:
