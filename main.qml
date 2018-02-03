@@ -10,9 +10,22 @@ ApplicationWindow
 
 	Item
 	{
+		id: graph
 		width: parent.width
 		anchors.top: parent.top
 		anchors.bottom: parent.verticalCenter
+
+		property real tickSize: (width - 25) / 6
+
+		function toVirtualSize (trueSize)
+		{
+			return trueSize / tickSize;
+		}
+
+		function toTrueSize (virtualSize)
+		{
+			return virtualSize * tickSize;
+		}
 
 		Canvas
 		{
@@ -21,41 +34,46 @@ ApplicationWindow
 
 			property bool redLineVisible: false
 			property bool yellowLineVisible: false
+
 			onPaint:
 			{
 				var ctx = getContext('2d');
 				ctx.save();
 
 				ctx.clearRect(0, 0, parent.width, parent.height);
+				var beginX = graphFirstPoint.width / 2
+				var endX = graphLastPoint.x + graphLastPoint.width / 2 + 1
 
 				if (yellowLineVisible)
 				{
-					ctx.lineWidth = 1
-					ctx.fillStyle = "yellow"
+					ctx.lineWidth = 10
 					ctx.strokeStyle = "yellow"
-					for (var pointX = 0; pointX < parent.width; ++pointX)
+					ctx.beginPath();
+					for (var pointX = beginX; pointX < endX; ++pointX)
 					{
-						var pointY = interpolator.polynom3xXtoY(pointX);
-						ctx.beginPath();
-						ctx.arc(pointX, pointY, 10, 0, Math.PI * 2, true);
-						ctx.fill();
-						ctx.stroke();
+						var virtualPointX = graph.toVirtualSize(pointX);
+						var virtulaPointY = interpolator.polynom3xXtoY(virtualPointX);
+						var pointY = graph.toTrueSize(virtulaPointY)
+						if (pointX != beginX) ctx.lineTo(pointX, pointY);
+						ctx.moveTo(pointX, pointY);
 					}
+					ctx.stroke();
 				}
 
 				if (redLineVisible)
 				{
-					ctx.lineWidth = 1
-					ctx.fillStyle = "red"
+					ctx.lineWidth = 10
 					ctx.strokeStyle = "red"
-					for (pointX = 0; pointX < parent.width; ++pointX)
+					ctx.beginPath();
+					for (pointX = beginX; pointX < endX; ++pointX)
 					{
-						pointY = interpolator.lagrangeInterpolationXtoY(pointX);
-						ctx.beginPath();
-						ctx.arc(pointX, pointY, 10, 0, Math.PI * 2, true);
-						ctx.fill();
-						ctx.stroke();
+						virtualPointX = graph.toVirtualSize(pointX);
+						virtulaPointY = interpolator.lagrangeInterpolationXtoY(virtualPointX);
+						pointY = graph.toTrueSize(virtulaPointY)
+						if (pointX != beginX) ctx.lineTo(pointX, pointY);
+						ctx.moveTo(pointX, pointY);
 					}
+					ctx.stroke();
 				}
 
 				ctx.restore();
@@ -68,22 +86,36 @@ ApplicationWindow
 			anchors.fill: parent
 			model: 5
 
+			// set points to interpolator object
 			function setUpPoints ()
 			{
-				for (var pointIndex = 0; pointIndex < model; pointIndex++)
+				// touchible points
+				for (var pointIndex = 1; pointIndex <= model; pointIndex++)
 				{
-					var item = itemAt(pointIndex);
-					var curPoint = Qt.point(
-						item.x + item.width / 2,
-						item.y + item.height / 2);
-
-					interpolator.setPointAt(pointIndex, curPoint);
+					var item = itemAt(pointIndex - 1);
+					interpolator.setPointAt(
+						pointIndex,
+						graph.toVirtualSize(item.x + item.width / 2),
+						graph.toVirtualSize(item.y + item.height / 2));
 				}
+
+				// first and last point
+				item = graphFirstPoint;
+				interpolator.setPointAt(
+					0,
+					graph.toVirtualSize(item.x + item.width / 2),
+					graph.toVirtualSize(item.y + item.height / 2));
+
+				item = graphLastPoint;
+				interpolator.setPointAt(
+					6,
+					graph.toVirtualSize(item.x + item.width / 2),
+					graph.toVirtualSize(item.y + item.height / 2));
 			}
 
 			Rectangle
 			{
-				x: 25 + (parent.width / 6) * (index + 1)
+				x: graph.toTrueSize(index + 1)
 				y: parent.height / 2 - (width / 2)
 				width: 25
 				height: 25
@@ -106,21 +138,21 @@ ApplicationWindow
 		Rectangle
 		{
 			id: graphFirstPoint
-			width: 13
+			width: 25
 			height: 25
-			x: parent.x
+			x: graph.toTrueSize(0)
 			anchors.verticalCenter: parent.verticalCenter
-			color: "blue"
+			color: "green"
 		}
 
 		Rectangle
 		{
 			id: graphLastPoint
-			width: 13
+			width: 25
 			height: 25
-			x: parent.x + parent.width - width
+			x: graph.toTrueSize(6)
 			anchors.verticalCenter: parent.verticalCenter
-			color: "blue"
+			color: "green"
 		}
 	}
 

@@ -12,16 +12,16 @@ public:
 	Q_INVOKABLE int pointsCount () const;
 	Q_INVOKABLE void setPointsCount (int count);
 
-	Q_INVOKABLE QPoint pointAt (int pos) const;
-	Q_INVOKABLE void setPointAt (int pos, QPoint value);
+	Q_INVOKABLE void setPointAt (int pos, float x, float y);
 
-	Q_INVOKABLE int lagrangeInterpolationXtoY (int x) const;
+	Q_INVOKABLE float lagrangeInterpolationXtoY (float x) const;
 	Q_INVOKABLE void polynom3xPrepare ();
-	Q_INVOKABLE int polynom3xXtoY (int x) const;
+	Q_INVOKABLE float polynom3xXtoY (float x) const;
 
 private:
-	QList<QPoint> _points;
-	QList<int> _polynom3xCoef;
+	struct Point { float x, y; };
+	QList<Point> _points;
+	QList<float> _polynom3xCoef;
 };
 
 #endif // INTERPOLATOR_HPP

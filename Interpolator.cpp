@@ -19,20 +19,15 @@ void Interpolator::setPointsCount (int count)
 	{
 		for (int i = _points.size(); i < count; ++i)
 		{
-			_points.push_back(QPoint(0, 0));
+			_points.push_back(Point{0, 0});
 		}
 	}
 
 }
 
-QPoint Interpolator::pointAt (int pos) const
+void Interpolator::setPointAt (int pos, float x, float y)
 {
-	return _points.at(pos);
-}
-
-void Interpolator::setPointAt (int pos, QPoint value)
-{
-	_points[pos] = value;
+	_points[pos] = Point{x, y};
 }
 
 // Реализация метода взята здесь:
@@ -94,11 +89,11 @@ void Interpolator::polynom3xPrepare ()
    {
 	   int i=0,j=0, k=0;
 	   for(k=0; k<N; k++){
-		   QPoint p = _points.at(k);
-		   x[k] = p.x();
-		   y[k] = p.y();
+		   Point p = _points.at(k);
+		   x[k] = p.x;
+		   y[k] = p.y;
 
-		   qDebug() << "Set point " << x[k] << " " << y[k] << " or " << p;
+		   qDebug() << "Set point " << x[k] << " " << y[k];
 	   }
 	   //init square sums matrix
 	   for(i=0; i<K+1; i++){
@@ -112,7 +107,7 @@ void Interpolator::polynom3xPrepare ()
 	   //init free coefficients column
 	   for(i=0; i<K+1; i++){
 		   for(k=0; k<N; k++){
-		   b[i] += pow(x[k], i) * y[k];
+			   b[i] += pow(x[k], i) * y[k];
 		   }
 	   }
    }
@@ -123,20 +118,20 @@ void Interpolator::polynom3xPrepare ()
 	   float temp=0;
 	   for(i=0; i<K+1; i++){
 		   if(sums[i][i]==0){
-		   for(j=0; j<K+1; j++){
-			   if(j==i) continue;
-			   if(sums[j][i] !=0 && sums[i][j]!=0){
-			   for(k=0; k<K+1; k++){
-				   temp = sums[j][k];
-				   sums[j][k] = sums[i][k];
-				   sums[i][k] = temp;
+			   for(j=0; j<K+1; j++){
+				   if(j==i) continue;
+				   if(sums[j][i] !=0 && sums[i][j]!=0){
+				   for(k=0; k<K+1; k++){
+					   temp = sums[j][k];
+					   sums[j][k] = sums[i][k];
+					   sums[i][k] = temp;
+				   }
+				   temp = b[j];
+				   b[j] = b[i];
+				   b[i] = temp;
+				   break;
+				   }
 			   }
-			   temp = b[j];
-			   b[j] = b[i];
-			   b[i] = temp;
-			   break;
-			   }
-		   }
 		   }
 	   }
    }
@@ -177,11 +172,10 @@ void Interpolator::polynom3xPrepare ()
    }
 
    // write coeficient cache
-   _polynom3xCoef.clear();
-   for (auto& item : a) _polynom3xCoef.push_back(item);
+   _polynom3xCoef = a;
 }
 
-int Interpolator::polynom3xXtoY (int x) const
+float Interpolator::polynom3xXtoY (float x) const
 {
 	qDebug() << "Debug: polynom3xXtoY runned";
 	if (_polynom3xCoef.isEmpty())
@@ -189,7 +183,7 @@ int Interpolator::polynom3xXtoY (int x) const
 		throw std::runtime_error(
 			"polynom3xXtoY: coeficient cache is empty");
 	}
-	int y = 0;
+	float y = 0;
 	for (int i = 0; i <= 3; ++i)
 	{
 		y += (_polynom3xCoef[i] * pow(x, i));
@@ -197,7 +191,7 @@ int Interpolator::polynom3xXtoY (int x) const
 	return y;
 }
 
-int Interpolator::lagrangeInterpolationXtoY (int x) const
+float Interpolator::lagrangeInterpolationXtoY (float x) const
 {
 
 	double result = 0.0;
@@ -208,9 +202,9 @@ int Interpolator::lagrangeInterpolationXtoY (int x) const
 
 		for (int j = 0; j < _points.size(); j++)
 			if (j != i)
-				P *= (x - _points[j].x())/ (_points[i].x() - _points[j].x());
+				P *= (x - _points[j].x)/ (_points[i].x - _points[j].x);
 
-		result += P * _points[i].y();
+		result += P * _points[i].y;
 	}
 
 	return result;

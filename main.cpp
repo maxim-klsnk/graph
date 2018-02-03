@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 	QQmlApplicationEngine engine;
 	Interpolator interpolator;
 
-	interpolator.setPointsCount(5);
+	interpolator.setPointsCount(7);
 	engine.rootContext()->setContextProperty("interpolator", &interpolator);
 	engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 	if (engine.rootObjects().isEmpty())
