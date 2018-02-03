@@ -10,17 +10,41 @@ ApplicationWindow
 
 	Item
 	{
-		id: graphCanvas
 		width: parent.width
 		anchors.top: parent.top
 		anchors.bottom: parent.verticalCenter
 
 		Canvas
 		{
+			id: graphCanvas
 			anchors.fill: parent
+
+			property bool redLineVisible: false
+			property bool yellowLineVisible: false
 			onPaint:
 			{
-				// some painting
+				var ctx = getContext('2d');
+				ctx.save();
+
+				ctx.clearRect(0, 0, parent.width, parent.height);
+
+				if (yellowLineVisible)
+				{
+					ctx.lineWidth = 1
+					ctx.fillStyle = "yellow"
+					ctx.strokeStyle = "yellow"
+					for (var pointX = 0; pointX < parent.width; ++pointX)
+					{
+						var pointY = interpolator.polynom3xXtoY(pointX);
+						console.log("PointX = ", pointX, "PointY = ", pointY);
+						ctx.beginPath();
+						ctx.arc(pointX, pointY, 10, 0, Math.PI * 2, true);
+						ctx.fill();
+						ctx.stroke();
+					}
+				}
+
+				ctx.restore();
 			}
 		}
 
@@ -87,8 +111,26 @@ ApplicationWindow
 			Button
 			{
 				width: parent.width
-				text: "First algorithm"
+				text: "Polynom3x Approximation"
 				height: parent.height / 4
+
+				onClicked:
+				{
+					for (var pointIndex = 0; pointIndex < graphPoints.model; pointIndex++)
+					{
+						var item = graphPoints.itemAt(pointIndex);
+						var curPoint = Qt.point(
+								item.x + item.width / 2,
+								item.y + item.height / 2);
+
+						console.log("Current point = ", curPoint);
+						interpolator.setPointAt(pointIndex, curPoint);
+					}
+
+					interpolator.polynom3xPrepare();
+					graphCanvas.yellowLineVisible = true;
+					graphCanvas.requestPaint();
+				}
 			}
 
 			Button
