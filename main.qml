@@ -36,7 +36,21 @@ ApplicationWindow
 					for (var pointX = 0; pointX < parent.width; ++pointX)
 					{
 						var pointY = interpolator.polynom3xXtoY(pointX);
-						console.log("PointX = ", pointX, "PointY = ", pointY);
+						ctx.beginPath();
+						ctx.arc(pointX, pointY, 10, 0, Math.PI * 2, true);
+						ctx.fill();
+						ctx.stroke();
+					}
+				}
+
+				if (redLineVisible)
+				{
+					ctx.lineWidth = 1
+					ctx.fillStyle = "red"
+					ctx.strokeStyle = "red"
+					for (pointX = 0; pointX < parent.width; ++pointX)
+					{
+						pointY = interpolator.lagrangeInterpolationXtoY(pointX);
 						ctx.beginPath();
 						ctx.arc(pointX, pointY, 10, 0, Math.PI * 2, true);
 						ctx.fill();
@@ -53,6 +67,19 @@ ApplicationWindow
 			id: graphPoints
 			anchors.fill: parent
 			model: 5
+
+			function setUpPoints ()
+			{
+				for (var pointIndex = 0; pointIndex < model; pointIndex++)
+				{
+					var item = itemAt(pointIndex);
+					var curPoint = Qt.point(
+						item.x + item.width / 2,
+						item.y + item.height / 2);
+
+					interpolator.setPointAt(pointIndex, curPoint);
+				}
+			}
 
 			Rectangle
 			{
@@ -116,17 +143,7 @@ ApplicationWindow
 
 				onClicked:
 				{
-					for (var pointIndex = 0; pointIndex < graphPoints.model; pointIndex++)
-					{
-						var item = graphPoints.itemAt(pointIndex);
-						var curPoint = Qt.point(
-								item.x + item.width / 2,
-								item.y + item.height / 2);
-
-						console.log("Current point = ", curPoint);
-						interpolator.setPointAt(pointIndex, curPoint);
-					}
-
+					graphPoints.setUpPoints();
 					interpolator.polynom3xPrepare();
 					graphCanvas.yellowLineVisible = true;
 					graphCanvas.requestPaint();
@@ -136,8 +153,15 @@ ApplicationWindow
 			Button
 			{
 				width: parent.width
-				text: "Second algorithm"
+				text: "Lagrange interpolation"
 				height: parent.height / 4
+
+				onClicked:
+				{
+					graphPoints.setUpPoints();
+					graphCanvas.redLineVisible = true;
+					graphCanvas.requestPaint();
+				}
 			}
 
 			Button

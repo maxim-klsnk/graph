@@ -15,7 +15,7 @@ public:
 	Q_INVOKABLE QPoint pointAt (int pos) const;
 	Q_INVOKABLE void setPointAt (int pos, QPoint value);
 
-	// Q_INVOKABLE func lagrangeInterpolation () const;
+	Q_INVOKABLE int lagrangeInterpolationXtoY (int x) const;
 	Q_INVOKABLE void polynom3xPrepare ();
 	Q_INVOKABLE int polynom3xXtoY (int x) const;
 

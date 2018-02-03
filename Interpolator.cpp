@@ -48,7 +48,6 @@ void Interpolator::polynom3xPrepare ()
 	K = 3;
 	N = _points.size();
 
-	qDebug() << "Mark 1";
 	//N - number of data points
 	//K - polinom power
 	//K<=N
@@ -61,7 +60,6 @@ void Interpolator::polynom3xPrepare ()
 
    int i=0,j=0, k=0;
 
-	qDebug() << "Mark 2";
    //allocate memory for matrixes
    {
 	   int i,j,k;
@@ -92,7 +90,6 @@ void Interpolator::polynom3xPrepare ()
 	   }
    }
 
-	qDebug() << "Mark 3";
    //read data
    {
 	   int i=0,j=0, k=0;
@@ -120,7 +117,6 @@ void Interpolator::polynom3xPrepare ()
 	   }
    }
 
-	qDebug() << "Mark 4";
    //check if there are 0 on main diagonal and exchange rows in that case
    {
 	   int i, j, k;
@@ -145,15 +141,13 @@ void Interpolator::polynom3xPrepare ()
 	   }
    }
 
-	qDebug() << "Mark 5";
    //process rows
    for(k=0; k<K+1; k++){
 	   for(i=k+1; i<K+1; i++){
-		   /*if(sums[k][k]==0){
-			   qDebug() << "Mark 5.5";
+		   if(sums[k][k]==0){
 			   throw std::runtime_error(
 				   "polynom3xApproximation: Solution is not exist.");
-		   }*/
+		   }
 		   float M = sums[i][k] / sums[k][k];
 		   for(j=k; j<K+1; j++){
 			   sums[i][j] -= M * sums[k][j];
@@ -170,7 +164,6 @@ void Interpolator::polynom3xPrepare ()
 	   a[i] = (b[i] - s) / sums[i][i];
    }
 
-	qDebug() << "Mark 6";
    //free memory for matrixes
    {
 	   int i;
@@ -183,7 +176,6 @@ void Interpolator::polynom3xPrepare ()
 	   delete [] sums;
    }
 
-	qDebug() << "Mark 7";
    // write coeficient cache
    _polynom3xCoef.clear();
    for (auto& item : a) _polynom3xCoef.push_back(item);
@@ -203,4 +195,23 @@ int Interpolator::polynom3xXtoY (int x) const
 		y += (_polynom3xCoef[i] * pow(x, i));
 	}
 	return y;
+}
+
+int Interpolator::lagrangeInterpolationXtoY (int x) const
+{
+
+	double result = 0.0;
+
+	for (int i = 0; i < _points.size(); i++)
+	{
+		double P = 1.0;
+
+		for (int j = 0; j < _points.size(); j++)
+			if (j != i)
+				P *= (x - _points[j].x())/ (_points[i].x() - _points[j].x());
+
+		result += P * _points[i].y();
+	}
+
+	return result;
 }
